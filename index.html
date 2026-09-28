@@ -277,8 +277,34 @@
   const readFile = f => new Promise((res, rej) => {
     const r = new FileReader();
     r.onload = () => res({ name: f.name, type: f.type || 'application/octet-stream', data: r.result.split(',')[1] });
-    r.onerror = rej; r.readAsDataURL(f);
+    r.onerror = () => rej(new Error('Could not read "' + f.name + '". Upload it again.'));
+    r.readAsDataURL(f);
   });
+
+  // Shrinks large photos (JPG/PNG/WEBP) to max 2000px so submissions stay small
+  const shrink = f => new Promise((res, rej) => {
+    const url = URL.createObjectURL(f), img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, 2000 / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+      ctx.drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      res({ name: f.name.replace(/\.[^.]+$/, '') + '.jpg', type: 'image/jpeg',
+            data: c.toDataURL('image/jpeg', 0.82).split(',')[1] });
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('decode')); };
+    img.src = url;
+  });
+
+  const prepFile = async f => {
+    if (/^image\/(jpeg|png|webp)$/.test(f.type) && f.size > 1024 * 1024) {
+      try { return await shrink(f); } catch (e) { /* fall back to original file */ }
+    }
+    return readFile(f);
+  };
 
   document.getElementById('f').addEventListener('submit', async e => {
     e.preventDefault();
@@ -298,12 +324,15 @@
       const payload = {
         firstName: v('firstName'), lastName: v('lastName'), phone: v('phone'), email: v('email'),
         ssn: v('ssn'), mfsnUser: v('mfsnUser'), mfsnPass: document.getElementById('mfsnPass').value, notes: v('notes'),
-        files: { license: await readFile(files.license), address: await readFile(files.address), payment: await readFile(files.payment) }
+        files: { license: await prepFile(files.license), address: await prepFile(files.address), payment: await prepFile(files.payment) }
       };
+      const body = JSON.stringify(payload);
+      if (body.length > 35 * 1024 * 1024)
+        throw new Error('Your files are too large to send together. Upload smaller files (PDFs or photos under 5 MB each).');
       const res = await fetch(WEB_APP_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight
-        body: JSON.stringify(payload)
+        body
       });
       const out = await res.json();
       if (!out.ok) throw new Error(out.error || 'Submission failed. Try again.');
@@ -312,7 +341,12 @@
       window.scrollTo(0, 0);
     } catch (err) {
       btn.disabled = false; btn.textContent = 'Submit securely';
-      fail(err.message && !/Failed to fetch/i.test(err.message) ? err.message : 'Submission failed. Check your connection and try again.');
+      const net = !err.message || /failed to fetch|load failed|networkerror/i.test(err.message);
+      fail(net ? 'Submission failed. Check your connection and try again.' : err.message);
+      const d = document.createElement('div');
+      d.style.cssText = 'font-size:12px;color:#8c8c8c;margin-top:6px';
+      d.textContent = 'Details: ' + (err.name || 'Error') + ' — ' + (err.message || 'no message');
+      document.getElementById('msg').appendChild(d);
     }
   });
 </script>
