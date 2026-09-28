@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@500&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --side: #0e0e0e;        /* left panel */
+    --bg: #1f1f1f;          /* right panel */
+    --field: #1c1c1c;       /* inputs & drop zones */
+    --line: #333333;        /* borders & dividers */
+    --line-soft: #2c2c2c;
+    --text: #f4f4f4;
+    --muted: #9b9b9b;
+    --dim: #6f6f6f;
+    --green: #56d08b;       /* stars, asterisks, links */
+    --sans: 'Geist', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --mono: 'Geist Mono', 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans);
+         -webkit-font-smoothing: antialiased; }
+
+  /* ---------- Left panel ---------- */
+  .side { position: fixed; inset: 0 auto 0 0; width: 458px; background: var(--side);
+          padding: 22px 21px; overflow: hidden; display: flex; flex-direction: column; }
+  .side h2 { font-size: 40px; line-height: 1.02; font-weight: 800; letter-spacing: -.055em;
+             margin: 68px 0 0; max-width: 260px; }
+  .side .intro { font-size: 16px; line-height: 1.55; color: #d0d0d0; margin: 26px 0 0; max-width: 310px; }
+
+  .steps { list-style: none; margin: 46px 0 0; padding: 0; position: relative; }
+  .steps::before { content: ""; position: absolute; left: 15px; top: 16px; bottom: 30px;
+                   width: 1px; background: var(--line); }
+  .steps li { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 22px; position: relative; }
+  .steps .num { flex: none; width: 31px; height: 31px; border-radius: 50%; border: 1px solid var(--line);
+                background: var(--side); display: grid; place-items: center; font-family: var(--mono);
+                font-size: 10px; color: var(--dim); margin-top: 1px; transition: border-color .2s, color .2s; }
+  .steps b { display: block; font-size: 14.5px; font-weight: 600; color: #cfcfcf; line-height: 1.35; }
+  .steps small { display: block; font-size: 12.5px; color: var(--dim); margin-top: 1px; }
+  .steps li.active .num { border-color: #fff; border-width: 1.5px; color: #fff; }
+  .steps li.active b { color: #fff; }
+  .steps li.active small { color: var(--muted); }
+
+  .proof { margin-top: auto; position: relative; z-index: 1; font-size: 14.5px; }
+  .proof .row { display: flex; align-items: center; gap: 14px; color: #d8d8d8; }
+  .proof .stars { color: var(--green); letter-spacing: 1px; font-size: 13px; }
+  .proof .stars em { font-style: normal; letter-spacing: 0; margin-left: 5px; font-size: 14.5px; }
+  .proof .dot { color: var(--dim); }
+  .proof .secure { color: #d8d8d8; margin-top: 8px; }
+  .watermark { position: absolute; left: -8px; bottom: -34px; font-size: 118px; font-weight: 800;
+               letter-spacing: -.04em; color: #1b1b1b; line-height: 1; white-space: nowrap;
+               pointer-events: none; user-select: none; }
+
+  /* ---------- Right panel ---------- */
+  .main { margin-left: 458px; min-height: 100%; padding: 46px 40px 80px; }
+  .form-col { max-width: 600px; margin: 0 auto; }
+  .logo { height: 46px; width: 184px; display: block; margin: 0 0 20px 4px; }
+  h1 { font-size: 33px; font-weight: 800; letter-spacing: -.05em; line-height: 1.1; margin: 0; }
+  .lede { color: var(--muted); font-size: 16px; margin: 12px 0 30px; }
+
+  .sec-head { display: flex; align-items: center; gap: 12px; padding: 13px 0; margin-bottom: 24px;
+              border-bottom: 1px solid var(--line-soft); }
+  .sec-head.first { border-top: 1px solid var(--line-soft); }
+  .sec-head .num { width: 31px; height: 31px; border-radius: 50%; border: 1px solid var(--line);
+                   display: grid; place-items: center; font-family: var(--mono); font-size: 10px; color: var(--dim); }
+  .sec-head h3 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.045em; }
+  section + section .sec-head { margin-top: 42px; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 32px; }
+  .field { position: relative; margin-bottom: 16px; }
+  .row2 .field { margin-bottom: 0; }
+  .field input, .field textarea {
+    width: 100%; height: 58px; padding: 22px 14px 6px; font: 400 16px var(--sans); color: var(--text);
+    background: var(--field); border: 1px solid var(--line); border-radius: 5px; outline: none;
+    transition: border-color .15s; }
+  .field textarea { height: 104px; padding-top: 26px; resize: vertical; display: block; }
+  .field input:focus, .field textarea:focus { border-color: #8a8a8a; }
+  .field label { position: absolute; left: 15px; top: 19px; font-size: 16px; color: #8c8c8c;
+                 pointer-events: none; transition: all .15s ease; }
+  .field textarea + label { top: 19px; }
+  .field label i, .up-label i { color: var(--green); font-style: normal; }
+  .field input:focus + label, .field input:not(:placeholder-shown) + label,
+  .field textarea:focus + label, .field textarea:not(:placeholder-shown) + label {
+    top: 7px; font-size: 11.5px; }
+  .field.pw input { padding-right: 48px; }
+  .eye { position: absolute; right: 14px; top: 19px; width: 22px; height: 22px; padding: 0; border: 0;
+         background: none; color: #cfcfcf; cursor: pointer; }
+  .help { font-size: 12.5px; color: var(--muted); margin: -8px 0 0 2px; }
+
+  .note { font-size: 14.5px; color: #e8e8e8; margin: -4px 0 20px; }
+  .note a { color: var(--green); font-weight: 600; text-underline-offset: 3px; }
+
+  .up-label { display: block; font-size: 14.5px; font-weight: 600; margin: 0 0 8px; }
+  .drop { display: flex; flex-direction: column; align-items: center; justify-content: center;
+          height: 148px; margin-bottom: 22px; border: 1px dashed var(--line); border-radius: 10px;
+          background: var(--field); cursor: pointer; text-align: center; padding: 12px;
+          transition: border-color .15s, background .15s; }
+  .drop:hover, .drop.over { border-color: #6a6a6a; }
+  .drop.has { border-style: solid; border-color: var(--green); }
+  .drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .drop:focus-within { outline: 2px solid #8a8a8a; outline-offset: 2px; }
+  .drop .ic { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line);
+              display: grid; place-items: center; color: #e6e6e6; margin-bottom: 14px; }
+  .drop .t { font-size: 14.5px; color: #cfcfcf; }
+  .drop .t b { color: #fff; font-weight: 600; }
+  .drop .t span { color: var(--green); font-weight: 600; }
+  .drop .types { font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+
+  .submit { width: 100%; height: 52px; margin-top: 42px; border: 0; border-radius: 999px;
+            background: #13a06f; color: #fff; font: 700 17px var(--sans); letter-spacing: -.01em; cursor: pointer;
+            transition: background .15s; }
+  .submit:hover { background: #17b47d; }
+  .submit:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+  .submit:disabled { opacity: .6; cursor: wait; }
+  .fine { display: flex; align-items: center; justify-content: center; gap: 8px;
+          font-size: 14px; color: var(--muted); margin-top: 18px; }
+  .fine svg { color: var(--green); flex: none; }
+  .msg { font-size: 14px; margin-top: 14px; text-align: center; }
+  .msg.err { color: #ff7a7a; }
+  .done { padding: 120px 0; text-align: center; }
+
+  /* ---------- Mobile ---------- */
+  @media (max-width: 900px) {
+    .side { position: relative; width: auto; min-height: 0; padding-bottom: 28px; }
+    .side h2 { margin-top: 32px; font-size: 34px; }
+    .steps, .watermark { display: none; }
+    .proof { margin-top: 28px; }
+    .main { margin-left: 0; padding: 32px 18px 60px; }
+  }
+  @media (max-width: 520px) { .row2 { grid-template-columns: 1fr; gap: 16px; margin-bottom: 16px; } }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<aside class="side">
+  <h2>Let's get your credit repair started.</h2>
+  <p class="intro">Fill this out once — we handle the heavy lifting from here and keep you posted at every step.</p>
+
+  <ol class="steps" id="steps">
+    <li data-for="s1" class="active"><span class="num">01</span><div><b>Personal information</b><small>Name, contact &amp; SSN</small></div></li>
+    <li data-for="s2"><span class="num">02</span><div><b>My Free Score Now</b><small>Account login details</small></div></li>
+    <li data-for="s3"><span class="num">03</span><div><b>Documents</b><small>License, address &amp; payment</small></div></li>
+    <li data-for="s4"><span class="num">04</span><div><b>Additional notes</b><small>Anything else (optional)</small></div></li>
+  </ol>
+
+  <div class="proof">
+    <div class="row"><span class="stars">★★★★★<em>4.9</em></span><span class="dot">·</span><span>$58M+ funded</span><span class="dot">·</span></div>
+    <div class="secure">Encrypted &amp; secure</div>
+  </div>
+  <div class="watermark" aria-hidden="true">CREDIT4</div>
+</aside>
+
+<main class="main">
+  <div class="form-col" id="col">
+    <svg class="logo" viewBox="0 0 280 70" role="img" aria-label="Credit4Days">
+      <defs>
+        <linearGradient id="c4dRing" gradientUnits="userSpaceOnUse" x1="58" y1="12" x2="14" y2="58">
+          <stop offset="0" stop-color="#f4f4f4"/><stop offset=".38" stop-color="#e6e6e6"/>
+          <stop offset=".72" stop-color="#7cc86a"/><stop offset="1" stop-color="#5bb64f"/>
+        </linearGradient>
+      </defs>
+      <path d="M35 10 A25 25 0 1 1 10 35" fill="none" stroke="url(#c4dRing)" stroke-width="6.5" stroke-linecap="round"/>
+      <text x="35" y="47" text-anchor="middle" font-family="Nunito, sans-serif" font-weight="800" font-size="33" fill="#62bd57">4</text>
+      <text x="70" y="47.5" font-family="Nunito, sans-serif" font-weight="600" font-size="34" textLength="200" lengthAdjust="spacingAndGlyphs" fill="#f4f4f4">Credit<tspan fill="#62bd57">4</tspan>Days</text>
+    </svg>
+    <h1>Credit Repair Form</h1>
+    <p class="lede">Everything our team needs to begin — about three minutes.</p>
+
+    <form id="f" novalidate>
+      <section id="s1">
+        <div class="sec-head first"><span class="num">01</span><h3>Personal information</h3></div>
+        <div class="row2">
+          <div class="field"><input id="firstName" placeholder=" " autocomplete="given-name"><label for="firstName">First name<i>*</i></label></div>
+          <div class="field"><input id="lastName" placeholder=" " autocomplete="family-name"><label for="lastName">Last name<i>*</i></label></div>
+        </div>
+        <div class="field"><input id="phone" type="tel" placeholder=" " autocomplete="tel"><label for="phone">Phone<i>*</i></label></div>
+        <div class="field"><input id="email" type="email" placeholder=" " autocomplete="email"><label for="email">Email<i>*</i></label></div>
+        <div class="field"><input id="ssn" inputmode="numeric" maxlength="11" placeholder=" " autocomplete="off"><label for="ssn">Social Security number<i>*</i></label></div>
+        <p class="help">Format 000-00-0000 · encrypted in transit</p>
+      </section>
+
+      <section id="s2">
+        <div class="sec-head"><span class="num">02</span><h3>My Free Score Now logins</h3></div>
+        <p class="note">Create an account on the My Free Score Now website using this link:
+          <a href="https://www.myfreescorenow.com/" target="_blank" rel="noopener">Create account</a></p>
+        <div class="field"><input id="mfsnUser" placeholder=" " autocomplete="off"><label for="mfsnUser">My Free Score Now username<i>*</i></label></div>
+        <div class="field pw"><input id="mfsnPass" type="password" placeholder=" " autocomplete="off"><label for="mfsnPass">My Free Score Now password<i>*</i></label>
+          <button type="button" class="eye" id="eye" aria-label="Show password">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <section id="s3">
+        <div class="sec-head"><span class="num">03</span><h3>Documents</h3></div>
+        <span class="up-label">Front of license<i>*</i></span>
+        <label class="drop" data-key="license"><input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.jpg,.jpeg,.png,.gif,.heic"></label>
+        <span class="up-label">Proof of address<i>*</i></span>
+        <label class="drop" data-key="address"><input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.jpg,.jpeg,.png,.gif,.heic"></label>
+        <span class="up-label">Proof of payment<i>*</i></span>
+        <label class="drop" data-key="payment"><input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.jpg,.jpeg,.png,.gif,.heic"></label>
+      </section>
+
+      <section id="s4">
+        <div class="sec-head"><span class="num">04</span><h3>Additional notes</h3></div>
+        <div class="field"><textarea id="notes" placeholder=" "></textarea><label for="notes">Anything we should know (optional)</label></div>
+      </section>
+
+      <button type="submit" class="submit" id="btn">Submit securely</button>
+      <p class="fine"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Your information is encrypted and handled securely.</p>
+      <div class="msg" id="msg" role="status"></div>
+    </form>
+  </div>
+</main>
+
+<script>
+  // PASTE your Apps Script web app URL between the quotes (ends in /exec)
+  const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzoUrjp4WEj577XCmhk1gDUVRl3jJDiQkDHa9vI4mq27F4uGSpiOx7yYRhEx1RdR8g1nQ/exec';
+
+  const MAX = 10 * 1024 * 1024;
+  const files = {};
+  const CLOUD = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 8.5a4 4 0 0 1 .5 7.97"/><path d="M12 12v8"/><path d="m8.5 15.5 3.5-3.5 3.5 3.5"/></svg>';
+  const TYPES = 'PDF, DOC/DOCX, XLS/CSV, JPG/JPEG, PNG, GIF, HEIC';
+
+  // SSN auto-format 000-00-0000
+  document.getElementById('ssn').addEventListener('input', e => {
+    const d = e.target.value.replace(/\D/g, '').slice(0, 9);
+    e.target.value = d.length > 5 ? `${d.slice(0,3)}-${d.slice(3,5)}-${d.slice(5)}`
+                   : d.length > 3 ? `${d.slice(0,3)}-${d.slice(3)}` : d;
+  });
+
+  // Show / hide password
+  document.getElementById('eye').addEventListener('click', () => {
+    const p = document.getElementById('mfsnPass');
+    p.type = p.type === 'password' ? 'text' : 'password';
+  });
+
+  // Drop zones
+  document.querySelectorAll('.drop').forEach(zone => {
+    const input = zone.querySelector('input');
+    const body = document.createElement('div');
+    body.style.display = 'contents';
+    const render = (name, err) => {
+      body.innerHTML = `<span class="ic">${CLOUD}</span>` +
+        (name ? `<span class="t"><b>${name}</b></span><span class="types">Click to replace</span>`
+              : `<span class="t"><b>Drag &amp; drop</b> or <span>browse</span></span><span class="types">${err || TYPES}</span>`);
+    };
+    render();
+    zone.appendChild(body);
+    const setFile = f => {
+      if (!f) return;
+      if (f.size > MAX) { delete files[zone.dataset.key]; zone.classList.remove('has'); render(null, f.name + ' is over 10 MB. Choose a smaller file.'); return; }
+      files[zone.dataset.key] = f; zone.classList.add('has');
+      render(f.name.replace(/[<>&]/g, ''));
+    };
+    input.addEventListener('change', () => setFile(input.files[0]));
+    ['dragenter','dragover'].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.add('over'); }));
+    ['dragleave','drop'].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.remove('over'); }));
+    zone.addEventListener('drop', e => setFile(e.dataTransfer.files[0]));
+  });
+
+  // Sidebar step highlight follows scroll
+  const steps = [...document.querySelectorAll('#steps li')];
+  const sections = steps.map(li => document.getElementById(li.dataset.for));
+  const spy = () => {
+    let idx = 0;
+    sections.forEach((s, i) => { if (s.getBoundingClientRect().top < window.innerHeight * 0.45) idx = i; });
+    steps.forEach((li, i) => li.classList.toggle('active', i === idx));
+  };
+  window.addEventListener('scroll', spy, { passive: true }); spy();
+
+  const readFile = f => new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res({ name: f.name, type: f.type || 'application/octet-stream', data: r.result.split(',')[1] });
+    r.onerror = rej; r.readAsDataURL(f);
+  });
+
+  document.getElementById('f').addEventListener('submit', async e => {
+    e.preventDefault();
+    const msg = document.getElementById('msg'), btn = document.getElementById('btn');
+    const v = id => document.getElementById(id).value.trim();
+    const fail = (t, focusId) => { msg.className = 'msg err'; msg.textContent = t; if (focusId) document.getElementById(focusId).focus(); };
+    msg.className = 'msg'; msg.textContent = '';
+
+    const missing = ['firstName','lastName','phone','email','ssn','mfsnUser','mfsnPass'].find(id => !v(id));
+    if (missing) return fail('Fill in all required fields.', missing);
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v('email'))) return fail('Enter a valid email address.', 'email');
+    if (!/^\d{3}-\d{2}-\d{4}$/.test(v('ssn'))) return fail('Enter your SSN as 000-00-0000.', 'ssn');
+    if (!files.license || !files.address || !files.payment) return fail('Upload all three documents.');
+
+    btn.disabled = true; btn.textContent = 'Submitting…';
+    try {
+      const payload = {
+        firstName: v('firstName'), lastName: v('lastName'), phone: v('phone'), email: v('email'),
+        ssn: v('ssn'), mfsnUser: v('mfsnUser'), mfsnPass: document.getElementById('mfsnPass').value, notes: v('notes'),
+        files: { license: await readFile(files.license), address: await readFile(files.address), payment: await readFile(files.payment) }
+      };
+      const res = await fetch(WEB_APP_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight
+        body: JSON.stringify(payload)
+      });
+      const out = await res.json();
+      if (!out.ok) throw new Error(out.error || 'Submission failed. Try again.');
+      document.getElementById('col').innerHTML =
+        '<div class="done"><h1>Submitted</h1><p class="lede">Our team has your information and will keep you posted at every step.</p></div>';
+      window.scrollTo(0, 0);
+    } catch (err) {
+      btn.disabled = false; btn.textContent = 'Submit securely';
+      fail(err.message && !/Failed to fetch/i.test(err.message) ? err.message : 'Submission failed. Check your connection and try again.');
+    }
+  });
+</script>
+</body>
+</html>
